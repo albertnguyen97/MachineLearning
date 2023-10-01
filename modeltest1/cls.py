@@ -42,7 +42,7 @@ param_grid = {
     "max_depth": [None, 2, 5, 10],
     "min_samples_leaf": [1, 2, 5]
 }
-cls = GridSearchCV(RandomForestClassifier(random_state=263), param_grid=param_grid, scoring="accuracy", verbose=2, cv=6, n_jobs=6)
+cls = GridSearchCV(RandomForestClassifier(random_state=263), param_grid=param_grid, scoring="accuracy", verbose=2, cv=1, n_jobs=6)
 # goi model co trong folder cls
 # cls = pickle.load(open("classifier.pkl",'rb'))
 cls.fit(x_train, y_train)
