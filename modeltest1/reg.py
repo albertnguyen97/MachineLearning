@@ -1,11 +1,13 @@
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from lazypredict.Supervised import LazyRegressor
+
 
 data = pd.read_csv("datasets/StudentScore.xls")
 print(data.info())
@@ -37,7 +39,7 @@ order_transformer = Pipeline(steps=[
 
 nom_transformer = Pipeline(steps=[
     ("imputer", SimpleImputer(strategy="most_frequent")),
-    ("encoder", OneHotEncoder(sparse=False))
+    ("encoder", OneHotEncoder(sparse_output=False))
 
 ])
 
@@ -62,21 +64,42 @@ preprocessor = ColumnTransformer(transformers=[
 ])
 
 # train model
-reg = Pipeline(steps=[
-    ("preprocessor", preprocessor),
-    ("model", RandomForestRegressor())
+# reg = Pipeline(steps=[
+#     ("preprocessor", preprocessor),
+#     ("regressor", RandomForestRegressor())
+# ])
+# param_grid = {
+#     "regressor__n_estimators": [50, 100, 200],
+#     "regressor__criterion": ["squared_error", "absolute_error", "poisson"],
+#     "preprocessor__num_features__imputer__strategy": ["mean", "median"]
+#     # "max_depth": [None, 2, 5, 10],
+#     # "min_samples_leaf": [1, 2, 5]
+# }
+# reg_cv = GridSearchCV(reg, param_grid=param_grid, scoring="r2", verbose=2, cv=6)
+#
+# reg_cv.fit(x_train, y_train)
+# y_predict = reg_cv.predict(x_test)
+# # for i, j in zip(y_test, y_predict):
+# #     print("Actual {}, Predict {}".format(i, j))
+# print(reg_cv.best_score_)
+# print(reg_cv.best_params_)
+#
+# print("R2: {}".format(r2_score(y_test, y_predict)))
+# print("R2: {}".format(mean_absolute_error(y_test, y_predict)))
+# print("R2: {}".format(mean_squared_error(y_test, y_predict)))
+#
+# sample = pd.DataFrame([["male", "group C", "some college", "standard", "completed", 80, 78]],
+#                       columns=['gender', "race/ethnicity", "parental level of education", "lunch",
+#                       "test preparation course", "reading score", "writing score"])
+#
+# print(reg_cv.predict(sample))
+# tien xu ly cho lazy classifier
+reg_pre = Pipeline(steps=[
+    ("preprocessor", preprocessor)
 ])
+x_train = reg_pre.fit_transform(x_train)
+x_test = reg_pre.transform(x_test)
 
-reg.fit(x_train, y_train)
-y_predict = reg.predict(x_test)
-# for i, j in zip(y_test, y_predict):
-#     print("Actual {}, Predict {}".format(i, j))
-print("R2: {}".format(r2_score(y_test, y_predict)))
-print("R2: {}".format(mean_absolute_error(y_test, y_predict)))
-print("R2: {}".format(mean_squared_error(y_test, y_predict)))
-
-sample = pd.DataFrame([["male", "group C", "some college", "standard", "completed", 80, 78]],
-                      columns=['gender', "race/ethnicity", "parental level of education", "lunch",
-                      "test preparation course", "reading score", "writing score"])
-
-print(reg.predict(sample))
+reg = LazyRegressor(verbose=0, ignore_warnings=True, custom_metric=None)
+models, predictions = reg.fit(x_train, x_test, y_train, y_test)
+print(models)
