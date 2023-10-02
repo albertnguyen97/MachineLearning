@@ -1,5 +1,7 @@
 import re
 import pandas as pd
+from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTEN
+from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.compose import ColumnTransformer
@@ -27,8 +29,12 @@ data['location'] = data['location'].apply(my_func)
 target = "career_level"
 x = data.drop(target, axis=1)
 y = data[target]
-
+ros = SMOTEN(random_state=0, sampling_strategy={"director_business_unit_leader": 500,
+                                                           "specialist": 500,
+                                                           "managing_director_small_medium_company": 500}, k_neighbors=2)
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+x_train, y_train = ros.fit_resample(x_train, y_train)
+print(y_train.value_counts())
 # print(data["industry"].value_counts())
 # stratify
 # print(y_train.value_counts())
@@ -44,13 +50,14 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 preprocessor = ColumnTransformer(transformers=[
     ("title", TfidfVectorizer(stop_words=["you", "english"]), "title"),
     ("location", OneHotEncoder(handle_unknown="ignore"), ["location"]),
-    ("description", TfidfVectorizer(stop_words="english", ngram_range=(1,2), min_df=0.005, max_df=0.995), "description"),
+    ("description", TfidfVectorizer(stop_words="english", ngram_range=(1, 2), min_df=0.005, max_df=0.995), "description"),
     ("function", OneHotEncoder(handle_unknown="ignore"), ["function"]),
     ("industry", TfidfVectorizer(stop_words="english"), "industry")
 ])
 
 cls = Pipeline(steps=[
     ("preprocessor", preprocessor),
+    ("feature_selection", SelectKBest(chi2, k=800)),
     ("classifier", RandomForestClassifier())
 ])
 
