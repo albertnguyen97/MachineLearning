@@ -8,7 +8,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from lazypredict.Supervised import LazyRegressor
 
-
 data = pd.read_csv("datasets/StudentScore.xls")
 print(data.info())
 target = "math score"
