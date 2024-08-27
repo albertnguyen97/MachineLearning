@@ -1,0 +1,21 @@
+import pandas as pd
+
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data"
+df = pd.read_csv(url, header = None)
+df.head(5)
+df.tail(5)
+# replace default header
+headers = ["...."]
+df.columns = headers
+# export pd dataframe to csv
+path=""
+df.to_csv(path)
+pd.read_csv()
+pd.read_json()
+df.to_json()
+df.to_excel()
+df.to_sql()
+df.dtypes
+df.describe()
+df.describe(include="all")
+df.info()
